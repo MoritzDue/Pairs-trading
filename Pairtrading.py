@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import coint
+import statsmodels.api as sm
 
 # Step 1: Download historical data
 end_date = datetime.today()
@@ -69,4 +70,45 @@ zscore = (spread - spread_mean) / spread_std
 
 print(f"Best pair: {best_pair}")
 print(zscore.tail())
+# Define trading signal thresholds
+entry_threshold = 2.0
+exit_threshold = 0.5
+
+
+# Step 6: Generate trading signals
+entry_threshold = 2.0
+exit_threshold = 0.5
+
+signals = pd.DataFrame(index=zscore.index)
+signals['zscore'] = zscore
+signals['long'] = zscore < -entry_threshold
+signals['short'] = zscore > entry_threshold
+signals['exit'] = zscore.abs() < exit_threshold
+
+# Step 7: Backtest strategy
+positions = pd.DataFrame(index=signals.index)
+positions['position'] = 0  # 1 for long, -1 for short
+
+current_position = 0
+for date in signals.index:
+    if signals.loc[date, 'long'] and current_position == 0:
+        current_position = 1
+    elif signals.loc[date, 'short'] and current_position == 0:
+        current_position = -1
+    elif signals.loc[date, 'exit'] and current_position != 0:
+        current_position = 0
+    positions.loc[date, 'position'] = current_position
+
+# Calculate daily returns of the spread
+spread_returns = spread.pct_change().fillna(0)
+
+# Strategy returns
+strategy_returns = positions['position'].shift(1) * spread_returns
+cumulative_returns = (1 + strategy_returns).cumprod()
+
+# Output final result
+print(f"Best pair: {best_pair}")
+print("Final cumulative return:", cumulative_returns.iloc[-1])
+
+
 
