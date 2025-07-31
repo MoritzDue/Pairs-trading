@@ -1,1 +1,5 @@
-
+yfinance
+pandas
+datetime
+statsmodels.tsa.stattools
+statsmodels.api
