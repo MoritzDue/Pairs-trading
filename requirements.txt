@@ -1,5 +1,5 @@
-yfinance
-pandas
-datetime
-statsmodels.tsa.stattools
-statsmodels.api
+yfinance==0.2.40
+pandas==2.2.2
+numpy==1.26.4
+statsmodels==0.14.2
+matplotlib==3.9.2
